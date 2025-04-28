@@ -1,25 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MTG Proxy Generator</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTG Deck Analyzer</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-  <h1>MTG Proxy Generator</h1>
+<body class="bg-dark text-light">
 
-  <div id="search-section">
-    <input type="text" id="card-search" placeholder="Search for a card..." />
-    <button id="search-button">Search</button>
+  <div class="container">
+    <h1>MTG Deck Analyzer</h1>
+
+    <textarea id="decklist" placeholder="Paste your decklist here..." rows="10"></textarea>
+    <button id="analyze-button">Analyze Deck</button>
+
+    <div class="results">
+      <h2>Mana Curve</h2>
+      <canvas id="manaCurveChart"></canvas>
+
+      <h2>Color Distribution</h2>
+      <canvas id="colorPieChart"></canvas>
+
+      <h2>Type Breakdown</h2>
+      <canvas id="typeBarChart"></canvas>
+
+      <h2>Deck Summary</h2>
+      <div id="deck-summary"></div>
+    </div>
   </div>
 
-  <div id="search-results"></div>
-
-  <h2>Proxy Gallery</h2>
-  <div id="gallery"></div>
-
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
