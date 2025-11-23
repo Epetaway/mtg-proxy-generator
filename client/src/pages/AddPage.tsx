@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { searchCardsByName } from '../scryfall';
-import type { CardIdentity, CollectionEntry } from '../../../shared/types';
+import type { CardIdentity, CollectionEntry } from 'shared/types';
 import { LocalBrowserCollectionRepository } from '../repository/LocalBrowserCollectionRepository';
 
 const repo = new LocalBrowserCollectionRepository();

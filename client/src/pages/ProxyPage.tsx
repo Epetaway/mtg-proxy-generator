@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { searchCardsByName } from '../scryfall';
 import ProxySheet from '../components/ProxySheet';
-import type { CardIdentity } from '../../../shared/types';
+import type { CardIdentity } from 'shared/types';
 
 export default function ProxyPage() {
   const [cardName, setCardName] = useState('');

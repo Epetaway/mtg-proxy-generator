@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { CollectionEntry } from '../../../shared/types';
+import type { CollectionEntry } from 'shared/types';
 import { LocalBrowserCollectionRepository } from '../repository/LocalBrowserCollectionRepository';
 import { fetchCardPrice } from '../pricing/ScryfallPriceProvider';
 import { exportCollectionAsGenericCsv, exportCollectionAsCardKingdomCsv } from '../utils/csv';

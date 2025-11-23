@@ -1,6 +1,6 @@
-import type { CollectionEntry, CollectionRepository } from '../../../shared/types';
+import type { CollectionEntry, CollectionRepository } from 'shared/types';
 import { COLLECTION_STORAGE_KEY } from '../config';
-
+export class LocalBrowserCollectionRepository implements CollectionRepository {
   async getAll(): Promise<CollectionEntry[]> {
     const raw = localStorage.getItem(COLLECTION_STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];

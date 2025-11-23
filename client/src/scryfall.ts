@@ -1,5 +1,5 @@
 // Scryfall API client for card search and details
-import type { CardIdentity } from '../../shared/types';
+import type { CardIdentity } from 'shared/types';
 
 const BASE_URL = 'https://api.scryfall.com';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { CardIdentity } from '../../../shared/types';
+import type { CardIdentity } from 'shared/types';
 
 interface ProxySheetProps {
   cards: CardIdentity[];

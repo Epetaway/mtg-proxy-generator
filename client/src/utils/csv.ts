@@ -1,4 +1,4 @@
-import type { CollectionEntry } from '../../../shared/types';
+import type { CollectionEntry } from 'shared/types';
 
 export function exportCollectionAsGenericCsv(entries: CollectionEntry[]): string {
   const header = ['Name', 'Set Code', 'Collector Number', 'Quantity', 'Condition', 'Tags'];

@@ -1,4 +1,4 @@
-import type { CardIdentity, CardPrice } from '../../../shared/types';
+import type { CardIdentity, CardPrice } from 'shared/types';
 
 const BASE_URL = 'https://api.scryfall.com/cards';
 
