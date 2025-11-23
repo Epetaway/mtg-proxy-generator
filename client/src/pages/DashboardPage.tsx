@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { CollectionEntry } from 'shared/types';
 import { LocalBrowserCollectionRepository } from '../repository/LocalBrowserCollectionRepository';
 import { fetchCardPrice } from '../pricing/ScryfallPriceProvider';
-import { searchCardsByName } from '../scryfall';
+import { searchCardsSmart } from '../api/catalog';
 import { Link } from 'react-router-dom';
 import { exportCollectionAsGenericCsv, exportCollectionAsCardKingdomCsv } from '../utils/csv';
 
@@ -43,7 +43,7 @@ export default function DashboardPage() {
           const names = ['Lightning Bolt', 'Counterspell', 'Island'];
           for (const n of names) {
             try {
-              const res = await searchCardsByName(n);
+              const res = await searchCardsSmart(n);
               const first = res[0];
               if (first) {
                 await repo.add({

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { searchCardsByName } from '../scryfall';
+import { searchCardsSmart } from '../api/catalog';
 import type { CardIdentity, CollectionEntry } from 'shared/types';
 import { LocalBrowserCollectionRepository } from '../repository/LocalBrowserCollectionRepository';
 import ScanModal from '../components/ScanModal';
@@ -21,7 +21,7 @@ export default function AddPage() {
     setLoading(true);
     setStatus('');
     try {
-      const cards = await searchCardsByName(query);
+      const cards = await searchCardsSmart(query);
       setResults(cards);
     } finally {
       setLoading(false);
@@ -32,7 +32,7 @@ export default function AddPage() {
     setQuery('Lightning Bolt');
     setLoading(true);
     try {
-      const cards = await searchCardsByName('Lightning Bolt');
+      const cards = await searchCardsSmart('Lightning Bolt');
       setResults(cards);
       setStatus(`Found ${cards.length} results for Lightning Bolt`);
     } finally {
@@ -77,7 +77,7 @@ export default function AddPage() {
           setQuery(text);
           setLoading(true);
           try {
-            const cards = await searchCardsByName(text);
+            const cards = await searchCardsSmart(text);
             setResults(cards);
             setStatus(`Found ${cards.length} results for "${text}"`);
           } finally {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { APP_MODE } from '../config';
+import { APP_MODE, USE_SERVER, SERVER_URL } from '../config';
 
 export default function SettingsPage() {
   return (
@@ -9,6 +9,8 @@ export default function SettingsPage() {
         <div>Current mode: <span className="font-bold">{APP_MODE}</span></div>
         <div className="mt-2 text-rose-600">Switching to PERSONAL mode uses a separate local collection and is never persisted to Git.</div>
         <div className="mt-2 text-xs text-slate-500">To change mode, edit <code>.env</code> and set <code>VITE_APP_MODE=PERSONAL</code>, then restart the dev server.</div>
+        <div className="mt-4">Server search: <span className="font-bold">{USE_SERVER ? 'ON' : 'OFF'}</span> {USE_SERVER && <span className="text-xs text-slate-500">({SERVER_URL})</span>}</div>
+        <div className="text-xs text-slate-500">To enable, set <code>VITE_USE_SERVER=true</code> (and optionally <code>VITE_SERVER_URL</code>) in <code>client/.env</code>.</div>
       </div>
     </section>
   );

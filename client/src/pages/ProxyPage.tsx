@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { searchCardsByName } from '../scryfall';
+import { searchCardsSmart } from '../api/catalog';
 import ProxySheet from '../components/ProxySheet';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -19,7 +19,7 @@ export default function ProxyPage() {
     setLoading(true);
     setError(null);
     try {
-      const cards = await searchCardsByName(cardName, setCode);
+      const cards = await searchCardsSmart(cardName, setCode);
       setResults(cards);
     } catch (err: any) {
       setError(err.message || 'Search failed');
@@ -65,7 +65,7 @@ export default function ProxyPage() {
           setCardName('Lightning Bolt');
           setLoading(true);
           try {
-            const cards = await searchCardsByName('Lightning Bolt');
+            const cards = await searchCardsSmart('Lightning Bolt');
             setResults(cards);
           } catch (e:any) { setError(e.message || 'Failed'); } finally { setLoading(false); }
         }}>Try Sample</button>
