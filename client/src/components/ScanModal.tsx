@@ -44,16 +44,8 @@ export default function ScanModal({ open, onClose, onRecognized }: ScanModalProp
     if (!ctx) return;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     try {
-      let Tesseract: any;
-      try {
-        // @ts-ignore - vite resolves at runtime
-        const mod = await import('tesseract.js/dist/tesseract.esm.min.js');
-        Tesseract = (mod as any).default || mod;
-      } catch {
-        // @ts-ignore - external URL import
-        const mod = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js');
-        Tesseract = (mod as any).default || (window as any).Tesseract;
-      }
+      const Tesseract: any = (window as any).Tesseract;
+      if (!Tesseract) throw new Error('Tesseract not loaded');
       const { data } = await Tesseract.recognize(canvas, 'eng', { logger: () => {} });
       const text = (data.text || '').replace(/\s+/g, ' ').trim();
       if (text) onRecognized(text);
