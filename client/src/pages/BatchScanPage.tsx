@@ -21,6 +21,9 @@ export default function BatchScanPage() {
   const lastNumberRef = useRef<string | null>(null);
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [maxScans, setMaxScans] = useState(10);
+  const [sharpnessThreshold, setSharpnessThreshold] = useState(15);
+  const lastSharpnessRef = useRef<number>(0);
+  const setBiasRef = useRef<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -52,18 +55,22 @@ export default function BatchScanPage() {
     try {
       const bmp = await createImageBitmap(canvas);
       const worker = new Worker(new URL('../workers/ocrWorker.ts', import.meta.url), { type: 'module' });
-      const { text, confidence, numberText } = await new Promise<{text:string; confidence:number; numberText?:string}>((resolve, reject) => {
+      const { text, confidence, numberText, sharpness } = await new Promise<{text:string; confidence:number; numberText?:string; sharpness?:number}>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('OCR timeout')), 15000);
         worker.onmessage = (ev: MessageEvent<any>) => {
           if (ev.data?.type === 'result') {
             clearTimeout(timeout);
-            resolve({ text: ev.data.text || '', confidence: Number(ev.data.confidence || 0), numberText: ev.data.numberText });
+            resolve({ text: ev.data.text || '', confidence: Number(ev.data.confidence || 0), numberText: ev.data.numberText, sharpness: Number(ev.data.sharpness || 0) });
             worker.terminate();
           }
         };
         worker.postMessage({ type: 'ocr', image: bmp }, [bmp]);
       });
-      if (confidence < threshold) return; // too low confidence
+      // Lock-on: require both confidence and sharpness
+      const sh = sharpness || 0;
+      const prevSh = lastSharpnessRef.current;
+      lastSharpnessRef.current = sh;
+      if (confidence < threshold || sh < sharpnessThreshold) return;
       lastNumberRef.current = (numberText || '').replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
       const lines = (text || '')
         .split(/\n+/)
@@ -118,12 +125,24 @@ export default function BatchScanPage() {
           const byNum = hits.find(h => (h.collectorNumber || '').toString().replace(/[^0-9a-zA-Z]/g, '').toUpperCase() === num);
           if (byNum) chosen = byNum;
         }
+        const bias = setBiasRef.current;
+        if (!num && bias) {
+          const byBias = hits.find(h => (h.setCode || '').toUpperCase() === bias.toUpperCase());
+          if (byBias) chosen = byBias;
+        }
         results.push({ query: q, match: chosen });
       } catch {
         results.push({ query: q, match: null });
       }
     }
     setResolved(results);
+    // Update set bias to the most frequent set in resolved
+    const sets = results.filter(r => r.match).map(r => (r.match as CardIdentity).setCode);
+    if (sets.length) {
+      const freq = sets.reduce<Record<string, number>>((acc, s) => { acc[s] = (acc[s] || 0) + 1; return acc; }, {});
+      const best = Object.entries(freq).sort((a,b) => b[1]-a[1])[0][0];
+      setBiasRef.current = best;
+    }
   }
 
   async function addAllToLibrary() {
@@ -171,6 +190,9 @@ export default function BatchScanPage() {
               </label>
               <label className="ml-2">Interval ms
                 <input type="number" className="ml-1 w-20 border rounded" value={intervalMs} onChange={e => setIntervalMs(Math.max(200, Number(e.target.value)))} />
+              </label>
+              <label className="ml-2">Sharpness ≥
+                <input type="number" className="ml-1 w-20 border rounded" value={sharpnessThreshold} onChange={e => setSharpnessThreshold(Math.max(0, Number(e.target.value)))} />
               </label>
               <label className="ml-2">Target
                 <input type="number" className="ml-1 w-14 border rounded" value={maxScans} onChange={e => setMaxScans(Math.max(1, Number(e.target.value)))} />

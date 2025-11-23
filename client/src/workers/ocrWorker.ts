@@ -11,6 +11,7 @@ export type OcrResponse = {
   confidence: number;
   numberText?: string;
   numberConfidence?: number;
+  sharpness?: number;
 };
 
 declare const self: DedicatedWorkerGlobalScope & typeof globalThis;
@@ -71,6 +72,27 @@ function preprocessROI(imageData: ImageData): ImageData {
   }
 }
 
+function computeSharpness(imageData: ImageData): number {
+  const cvAny: any = (self as any).cv;
+  if (!cvAny || !cvAny.Mat) return 0;
+  try {
+    // @ts-ignore
+    const src = cvAny.matFromImageData(imageData);
+    const gray = new cvAny.Mat();
+    cvAny.cvtColor(src, gray, cvAny.COLOR_RGBA2GRAY, 0);
+    const lap = new cvAny.Mat();
+    cvAny.Laplacian(gray, lap, cvAny.CV_64F);
+    const mean = new cvAny.Mat();
+    const stddev = new cvAny.Mat();
+    cvAny.meanStdDev(lap, mean, stddev);
+    const variance = Math.pow(stddev.doubleAt(0, 0), 2);
+    src.delete(); gray.delete(); lap.delete(); mean.delete(); stddev.delete();
+    return variance;
+  } catch {
+    return 0;
+  }
+}
+
 self.onmessage = async (ev: MessageEvent<OcrRequest>) => {
   const data = ev.data;
   if (!data || data.type !== 'ocr') return;
@@ -83,6 +105,7 @@ self.onmessage = async (ev: MessageEvent<OcrRequest>) => {
   const imgData = bctx.getImageData(0, 0, base.width, base.height);
   await cvReady();
   const roiData = preprocessROI(imgData);
+  const sharpness = computeSharpness(roiData);
   const roiCanvas = new OffscreenCanvas(roiData.width, roiData.height);
   const rctx = roiCanvas.getContext('2d');
   if (!rctx) return;
@@ -111,5 +134,5 @@ self.onmessage = async (ev: MessageEvent<OcrRequest>) => {
     }
   } catch {}
 
-  self.postMessage({ type: 'result', text, confidence, numberText, numberConfidence } as OcrResponse);
+  self.postMessage({ type: 'result', text, confidence, numberText, numberConfidence, sharpness } as OcrResponse);
 };
