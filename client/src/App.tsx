@@ -10,6 +10,7 @@ function App() {
             <Link to="/">Dashboard</Link>
             <Link to="/add">Add</Link>
             <Link to="/proxy">Proxy</Link>
+            <Link to="/scan">Scan</Link>
             <Link to="/settings">Settings</Link>
           </nav>
         </div>

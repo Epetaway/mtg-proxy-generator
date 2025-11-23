@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Tesseract from 'tesseract.js';
 
 interface ScanModalProps {
   open: boolean;
@@ -45,6 +44,7 @@ export default function ScanModal({ open, onClose, onRecognized }: ScanModalProp
     if (!ctx) return;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     try {
+      const { default: Tesseract } = await import('tesseract.js');
       const { data } = await Tesseract.recognize(canvas, 'eng', { logger: () => {} });
       const text = (data.text || '').replace(/\s+/g, ' ').trim();
       if (text) onRecognized(text);

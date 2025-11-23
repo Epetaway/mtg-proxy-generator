@@ -8,6 +8,7 @@ import ProxyPage from './pages/ProxyPage';
 import SettingsPage from './pages/SettingsPage';
 import ErrorPage from './pages/ErrorPage';
 import NotFoundPage from './pages/NotFoundPage';
+import BatchScanPage from './pages/BatchScanPage';
 import './index.css';
 
 const router = createBrowserRouter([
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'add', element: <AddPage /> },
       { path: 'proxy', element: <ProxyPage /> },
+      { path: 'scan', element: <BatchScanPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
