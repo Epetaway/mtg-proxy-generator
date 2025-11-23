@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { searchCardsByName } from '../scryfall';
 import type { CardIdentity, CollectionEntry } from 'shared/types';
 import { LocalBrowserCollectionRepository } from '../repository/LocalBrowserCollectionRepository';
+import ScanModal from '../components/ScanModal';
 
 const repo = new LocalBrowserCollectionRepository();
 
@@ -13,6 +14,7 @@ export default function AddPage() {
   const [quantity, setQuantity] = useState(1);
   const [tags, setTags] = useState('');
   const [status, setStatus] = useState('');
+  const [scanOpen, setScanOpen] = useState(false);
 
   async function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -63,17 +65,39 @@ export default function AddPage() {
       <form className="flex gap-2" onSubmit={handleSearch}>
         <input value={query} onChange={e => setQuery(e.target.value)} className="w-full rounded-xl border-slate-300" placeholder="Search card name..." />
         <button type="submit" className="rounded-xl bg-indigo-600 text-white px-4 py-2 font-semibold">Search</button>
-        <button type="button" disabled className="rounded-xl border px-4 py-2 text-slate-400 cursor-not-allowed" title="Coming soon">Scan (beta)</button>
+        <button type="button" className="rounded-xl border px-4 py-2" onClick={() => setScanOpen(true)}>Scan (beta)</button>
         <button type="button" onClick={runSampleSearch} className="rounded-xl border px-4 py-2">Try Sample</button>
       </form>
       <div className="mt-2 text-xs text-slate-600">{loading ? 'Searching…' : status}</div>
+      <ScanModal
+        open={scanOpen}
+        onClose={() => setScanOpen(false)}
+        onRecognized={async (text) => {
+          setScanOpen(false);
+          setQuery(text);
+          setLoading(true);
+          try {
+            const cards = await searchCardsByName(text);
+            setResults(cards);
+            setStatus(`Found ${cards.length} results for "${text}"`);
+          } finally {
+            setLoading(false);
+          }
+        }}
+      />
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {results.map(card => (
-          <div key={card.scryfallId} className={`border rounded-xl p-2 flex flex-col items-center cursor-pointer ${selected?.scryfallId === card.scryfallId ? 'border-indigo-500 ring-2 ring-indigo-400' : ''}`} onClick={() => setSelected(card)}>
-            <img src={card.imageUri} alt={card.name} className="w-full h-32 object-cover rounded" />
+          <div
+            key={card.scryfallId}
+            className={`border rounded-xl p-2 cursor-pointer hover:shadow-sm ${selected?.scryfallId === card.scryfallId ? 'border-indigo-500 ring-2 ring-indigo-400' : ''}`}
+            onClick={() => setSelected(card)}
+          >
+            <div className="w-full bg-slate-100 rounded" style={{ aspectRatio: '2.5 / 3.5' }}>
+              <img src={card.imageUri} alt={card.name} className="w-full h-full object-contain" />
+            </div>
             <div className="mt-2 text-xs text-center">
-              <div className="font-semibold">{card.name}</div>
-              <div>{card.setCode} #{card.collectorNumber}</div>
+              <div className="font-semibold line-clamp-2">{card.name}</div>
+              <div className="text-slate-500">{card.setCode} #{card.collectorNumber}</div>
             </div>
           </div>
         ))}

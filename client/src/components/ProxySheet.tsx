@@ -13,11 +13,11 @@ export default function ProxySheet({ cards }: ProxySheetProps) {
   return (
     <div className="bg-white rounded-xl border border-dashed border-slate-300 p-4 grid grid-cols-3 gap-2 min-h-[200px]">
       {filled.map((card, i) => (
-        <div key={i} className="aspect-[2.5/3.5] border rounded-xl flex items-center justify-center bg-slate-100">
+        <div key={i} className="border rounded-xl bg-slate-100" style={{ aspectRatio: '2.5 / 3.5' }}>
           {card ? (
-            <img src={card.imageUri} alt={card.name} className="w-full h-full object-cover rounded" />
+            <img src={card.imageUri} alt={card.name} className="w-full h-full object-contain" />
           ) : (
-            <span className="text-xs text-slate-400">Empty</span>
+            <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">Empty</div>
           )}
         </div>
       ))}

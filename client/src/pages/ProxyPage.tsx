@@ -107,8 +107,10 @@ export default function ProxyPage() {
         {results.map(card => {
           const isSelected = selected.find(c => c.scryfallId === card.scryfallId);
           return (
-            <div key={card.scryfallId} className={`border rounded-xl p-2 flex flex-col items-center cursor-pointer ${isSelected ? 'border-indigo-500 ring-2 ring-indigo-400' : ''}`} onClick={() => toggleSelect(card)}>
-              <img src={card.imageUri} alt={card.name} className="w-full h-32 object-cover rounded" />
+            <div key={card.scryfallId} className={`border rounded-xl p-2 cursor-pointer hover:shadow-sm ${isSelected ? 'border-indigo-500 ring-2 ring-indigo-400' : ''}`} onClick={() => toggleSelect(card)}>
+              <div className="w-full bg-slate-100 rounded" style={{ aspectRatio: '2.5 / 3.5' }}>
+                <img src={card.imageUri} alt={card.name} className="w-full h-full object-contain" />
+              </div>
               <div className="mt-2 text-xs text-center">
                 <div className="font-semibold">{card.name}</div>
                 <div>{card.setCode} #{card.collectorNumber}</div>
