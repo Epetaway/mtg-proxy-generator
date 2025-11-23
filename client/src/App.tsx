@@ -1,5 +1,7 @@
 import { Routes, Route, Link } from 'react-router-dom';
 import ProxyPage from './pages/ProxyPage';
+import AddPage from './pages/AddPage';
+import DashboardPage from './pages/DashboardPage';
 
 function App() {
   return (
@@ -17,8 +19,8 @@ function App() {
       </header>
       <main className="max-w-6xl mx-auto p-4">
         <Routes>
-          <Route path="/" element={<div>Dashboard (coming soon)</div>} />
-          <Route path="/add" element={<div>Add Cards (coming soon)</div>} />
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/add" element={<AddPage />} />
           <Route path="/proxy" element={<ProxyPage />} />
           <Route path="/settings" element={<div>Settings (coming soon)</div>} />
         </Routes>
