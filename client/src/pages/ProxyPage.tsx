@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { searchCardsByName } from '../scryfall';
+import ProxySheet from '../components/ProxySheet';
 import type { CardIdentity } from '../../../shared/types';
 
 export default function ProxyPage() {
@@ -8,6 +9,7 @@ export default function ProxyPage() {
   const [results, setResults] = useState<CardIdentity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<CardIdentity[]>([]);
 
   async function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,6 +23,18 @@ export default function ProxyPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function toggleSelect(card: CardIdentity) {
+    setSelected(sel => {
+      if (sel.find(c => c.scryfallId === card.scryfallId)) {
+        return sel.filter(c => c.scryfallId !== card.scryfallId);
+      } else if (sel.length < 9) {
+        return [...sel, card];
+      } else {
+        return sel;
+      }
+    });
   }
 
   return (
@@ -43,15 +57,24 @@ export default function ProxyPage() {
         {error && <span className="text-rose-600">{error}</span>}
       </div>
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        {results.map(card => (
-          <div key={card.scryfallId} className="border rounded-xl p-2 flex flex-col items-center">
-            <img src={card.imageUri} alt={card.name} className="w-full h-32 object-cover rounded" />
-            <div className="mt-2 text-xs text-center">
-              <div className="font-semibold">{card.name}</div>
-              <div>{card.setCode} #{card.collectorNumber}</div>
+        {results.map(card => {
+          const isSelected = selected.find(c => c.scryfallId === card.scryfallId);
+          return (
+            <div key={card.scryfallId} className={`border rounded-xl p-2 flex flex-col items-center cursor-pointer ${isSelected ? 'border-indigo-500 ring-2 ring-indigo-400' : ''}`} onClick={() => toggleSelect(card)}>
+              <img src={card.imageUri} alt={card.name} className="w-full h-32 object-cover rounded" />
+              <div className="mt-2 text-xs text-center">
+                <div className="font-semibold">{card.name}</div>
+                <div>{card.setCode} #{card.collectorNumber}</div>
+                {isSelected && <div className="text-indigo-600 font-bold">Selected</div>}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+      </div>
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-2">Sheet Preview</h3>
+        <span className="text-xs text-slate-500">Target: 9 cards (3×3)</span>
+        <ProxySheet cards={selected} />
       </div>
     </section>
   );
