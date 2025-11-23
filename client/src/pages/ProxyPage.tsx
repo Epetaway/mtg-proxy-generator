@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { searchCardsByName } from '../scryfall';
 import ProxySheet from '../components/ProxySheet';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import type { CardIdentity } from 'shared/types';
 
 export default function ProxyPage() {
@@ -10,6 +12,7 @@ export default function ProxyPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<CardIdentity[]>([]);
+  const printRef = useRef<HTMLDivElement>(null);
 
   async function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,6 +59,39 @@ export default function ProxyPage() {
         {loading && 'Searching...'}
         {error && <span className="text-rose-600">{error}</span>}
       </div>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs">
+        <button className="rounded border px-3 py-1" onClick={() => setSelected([])}>Clear Sheet</button>
+        <button className="rounded border px-3 py-1" onClick={async () => {
+          if (!printRef.current) return;
+          const canvas = await html2canvas(printRef.current, { backgroundColor: '#ffffff', scale: 2 });
+          const link = document.createElement('a');
+          link.download = 'proxy-sheet.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }}>Download PNG</button>
+        <button className="rounded border px-3 py-1" onClick={async () => {
+          if (!printRef.current) return;
+          const canvas = await html2canvas(printRef.current, { backgroundColor: '#ffffff', scale: 2 });
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+          pdf.save('proxy-sheet.pdf');
+        }}>Download PDF</button>
+        <button className="rounded border px-3 py-1" onClick={() => {
+          const w = window.open('', 'PRINT', 'height=800,width=600');
+          if (!w) return;
+          const styles = `@page{size:Letter;margin:0.25in;} .print-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.12in;padding:0.05in;} .print-card{width:2.5in;height:3.5in;position:relative;background:#fff;} .print-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;} .print-card::before{content:"";position:absolute;width:0.125in;height:0.125in;pointer-events:none;background:transparent;box-shadow: -0.125in 0 0 0 #000, 0 -0.125in 0 0 #000, 2.625in 0 0 0 #000, 2.5in -0.125in 0 0 #000, -0.125in 3.5in 0 0 #000, 0 3.625in 0 0 #000, 2.625in 3.5in 0 0 #000, 2.5in 3.625in 0 0 #000;}`;
+          w.document.write(`<html><head><title>Print Proxy Sheet</title><style>${styles}</style></head><body>`);
+          w.document.write(printRef.current?.outerHTML || '');
+          w.document.write('</body></html>');
+          w.document.close();
+          w.focus();
+          w.print();
+          w.close();
+        }}>Print</button>
+      </div>
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {results.map(card => {
           const isSelected = selected.find(c => c.scryfallId === card.scryfallId);
@@ -74,7 +110,15 @@ export default function ProxyPage() {
       <div className="mt-8">
         <h3 className="text-lg font-semibold mb-2">Sheet Preview</h3>
         <span className="text-xs text-slate-500">Target: 9 cards (3×3)</span>
-        <ProxySheet cards={selected} />
+        <div ref={printRef} className="print-grid" style={{ background: '#fff' }}>
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div key={i} className="print-card">
+              {selected[i] ? (
+                <img src={selected[i].imageUri} alt={selected[i].name} />
+              ) : null}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

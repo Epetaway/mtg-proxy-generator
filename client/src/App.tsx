@@ -1,8 +1,4 @@
-import { Routes, Route, Link } from 'react-router-dom';
-import ProxyPage from './pages/ProxyPage';
-import AddPage from './pages/AddPage';
-import DashboardPage from './pages/DashboardPage';
-import SettingsPage from './pages/SettingsPage';
+import { Link, Outlet } from 'react-router-dom';
 
 function App() {
   return (
@@ -19,12 +15,7 @@ function App() {
         </div>
       </header>
       <main className="max-w-6xl mx-auto p-4">
-        <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/add" element={<AddPage />} />
-          <Route path="/proxy" element={<ProxyPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
+        <Outlet />
       </main>
       <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-500">
         © 2025 TCG Portfolio • For personal use only. Not for sale.
