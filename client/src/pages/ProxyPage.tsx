@@ -58,6 +58,17 @@ export default function ProxyPage() {
       <div className="mt-4 text-sm text-slate-600">
         {loading && 'Searching...'}
         {error && <span className="text-rose-600">{error}</span>}
+        {!loading && !error && results.length > 0 && <span>{results.length} results</span>}
+      </div>
+      <div className="mt-2">
+        <button className="rounded border px-3 py-1 text-xs" onClick={async () => {
+          setCardName('Lightning Bolt');
+          setLoading(true);
+          try {
+            const cards = await searchCardsByName('Lightning Bolt');
+            setResults(cards);
+          } catch (e:any) { setError(e.message || 'Failed'); } finally { setLoading(false); }
+        }}>Try Sample</button>
       </div>
       <div className="mt-3 flex flex-wrap gap-2 text-xs">
         <button className="rounded border px-3 py-1" onClick={() => setSelected([])}>Clear Sheet</button>

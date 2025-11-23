@@ -26,6 +26,18 @@ export default function AddPage() {
     }
   }
 
+  async function runSampleSearch() {
+    setQuery('Lightning Bolt');
+    setLoading(true);
+    try {
+      const cards = await searchCardsByName('Lightning Bolt');
+      setResults(cards);
+      setStatus(`Found ${cards.length} results for Lightning Bolt`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleAdd() {
     if (!selected) return;
     const entry: CollectionEntry = {
@@ -52,7 +64,9 @@ export default function AddPage() {
         <input value={query} onChange={e => setQuery(e.target.value)} className="w-full rounded-xl border-slate-300" placeholder="Search card name..." />
         <button type="submit" className="rounded-xl bg-indigo-600 text-white px-4 py-2 font-semibold">Search</button>
         <button type="button" disabled className="rounded-xl border px-4 py-2 text-slate-400 cursor-not-allowed" title="Coming soon">Scan (beta)</button>
+        <button type="button" onClick={runSampleSearch} className="rounded-xl border px-4 py-2">Try Sample</button>
       </form>
+      <div className="mt-2 text-xs text-slate-600">{loading ? 'Searching…' : status}</div>
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {results.map(card => (
           <div key={card.scryfallId} className={`border rounded-xl p-2 flex flex-col items-center cursor-pointer ${selected?.scryfallId === card.scryfallId ? 'border-indigo-500 ring-2 ring-indigo-400' : ''}`} onClick={() => setSelected(card)}>
