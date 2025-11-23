@@ -1,0 +1,19 @@
+# Node
+node_modules/
+
+# Vite/React
+client/dist/
+
+# SQLite DBs
+server/demo.db
+server/local.db
+
+# Env files
+.env.local
+.env.personal
+
+# Logs
+*.log
+
+# OS
+.DS_Store
