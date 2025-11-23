@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { searchCardsByName } from '../scryfall';
 import type { CardIdentity, CollectionEntry } from 'shared/types';
 import { LocalBrowserCollectionRepository } from '../repository/LocalBrowserCollectionRepository';
+import { suggestNames } from '../utils/namesCatalog';
 
 const repo = new LocalBrowserCollectionRepository();
 
@@ -42,14 +43,30 @@ export default function BatchScanPage() {
     if (!ctx) return;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     try {
-      const Tesseract: any = (window as any).Tesseract;
-      if (!Tesseract) throw new Error('Tesseract not loaded');
-      const { data } = await Tesseract.recognize(canvas, 'eng', { logger: () => {} });
-      const lines = (data.text || '')
+      const bmp = await createImageBitmap(canvas);
+      const worker = new Worker(new URL('../workers/ocrWorker.ts', import.meta.url), { type: 'module' });
+      const text: string = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('OCR timeout')), 15000);
+        worker.onmessage = (ev: MessageEvent<any>) => {
+          if (ev.data?.type === 'result') {
+            clearTimeout(timeout);
+            resolve(ev.data.text || '');
+            worker.terminate();
+          }
+        };
+        worker.postMessage({ type: 'ocr', image: bmp }, [bmp]);
+      });
+      const lines = (text || '')
         .split(/\n+/)
         .map(l => l.replace(/[^A-Za-z0-9:'\- ]+/g, ' ').trim())
         .filter(l => l.length >= 3);
-      if (lines.length) setCandidates(prev => [...prev, ...lines]);
+      // Try fuzzy normalize each line to a known card name
+      const normalized: string[] = [];
+      for (const l of lines) {
+        const s = await suggestNames(l, 1);
+        normalized.push(s[0] || l);
+      }
+      if (normalized.length) setCandidates(prev => [...prev, ...normalized]);
     } catch (e: any) {
       setError(e.message || 'OCR failed');
     } finally {

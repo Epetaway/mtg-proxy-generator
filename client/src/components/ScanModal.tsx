@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { suggestNames } from '../utils/namesCatalog';
 
 interface ScanModalProps {
   open: boolean;
@@ -44,11 +45,24 @@ export default function ScanModal({ open, onClose, onRecognized }: ScanModalProp
     if (!ctx) return;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     try {
-      const Tesseract: any = (window as any).Tesseract;
-      if (!Tesseract) throw new Error('Tesseract not loaded');
-      const { data } = await Tesseract.recognize(canvas, 'eng', { logger: () => {} });
-      const text = (data.text || '').replace(/\s+/g, ' ').trim();
-      if (text) onRecognized(text);
+      const bmp = await createImageBitmap(canvas);
+      const worker = new Worker(new URL('../workers/ocrWorker.ts', import.meta.url), { type: 'module' });
+      const text: string = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('OCR timeout')), 15000);
+        worker.onmessage = (ev: MessageEvent<any>) => {
+          if (ev.data?.type === 'result') {
+            clearTimeout(timeout);
+            resolve(ev.data.text || '');
+            worker.terminate();
+          }
+        };
+        worker.postMessage({ type: 'ocr', image: bmp }, [bmp]);
+      });
+      const normalized = text.replace(/\s+/g, ' ').trim();
+      if (normalized) {
+        const suggestions = await suggestNames(normalized, 1);
+        onRecognized(suggestions[0] || normalized);
+      }
     } catch (e: any) {
       setError(e.message || 'OCR failed');
     } finally {
