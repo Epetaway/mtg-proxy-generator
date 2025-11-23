@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import type { CollectionEntry } from 'shared/types';
 import { LocalBrowserCollectionRepository } from '../repository/LocalBrowserCollectionRepository';
 import { fetchCardPrice } from '../pricing/ScryfallPriceProvider';
+import { searchCardsByName } from '../scryfall';
+import { Link } from 'react-router-dom';
 import { exportCollectionAsGenericCsv, exportCollectionAsCardKingdomCsv } from '../utils/csv';
 
 const repo = new LocalBrowserCollectionRepository();
@@ -33,9 +35,32 @@ export default function DashboardPage() {
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6">
       <h2 className="text-xl font-semibold mb-2">Collection Dashboard</h2>
-      <div className="mb-4 flex gap-8 text-sm">
+      <div className="mb-2 text-sm text-slate-600">Start by adding cards on the <Link to="/add" className="text-indigo-600 underline">Add</Link> page, or load demo data.</div>
+      <div className="mb-4 flex gap-2 sm:gap-8 text-sm items-center">
         <div>Total cards: <span className="font-bold">{totalCards}</span></div>
         <div>Estimated value: <span className="font-bold">${totalValue.toFixed(2)}</span></div>
+        <button className="rounded border px-3 py-1 text-xs" onClick={async () => {
+          const names = ['Lightning Bolt', 'Counterspell', 'Island'];
+          for (const n of names) {
+            try {
+              const res = await searchCardsByName(n);
+              const first = res[0];
+              if (first) {
+                await repo.add({
+                  id: crypto.randomUUID(),
+                  card: first,
+                  quantity: 1,
+                  condition: 'NM',
+                  tags: ['demo'],
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                });
+              }
+            } catch {}
+          }
+          const updated = await repo.getAll();
+          setEntries(updated);
+        }}>Load Demo Data</button>
         <button className="ml-auto rounded border px-3 py-1 text-xs" onClick={() => {
           const csv = exportCollectionAsGenericCsv(entries);
           const blob = new Blob([csv], { type: 'text/csv' });

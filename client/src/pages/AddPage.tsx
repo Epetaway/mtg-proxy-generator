@@ -46,9 +46,12 @@ export default function AddPage() {
 
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6">
+      <h2 className="text-xl font-semibold mb-2">Add Cards</h2>
+      <p className="text-sm text-slate-600 mb-3">Search Scryfall by card name, then select and add to your collection. Scan (camera) is planned for a future update.</p>
       <form className="flex gap-2" onSubmit={handleSearch}>
         <input value={query} onChange={e => setQuery(e.target.value)} className="w-full rounded-xl border-slate-300" placeholder="Search card name..." />
         <button type="submit" className="rounded-xl bg-indigo-600 text-white px-4 py-2 font-semibold">Search</button>
+        <button type="button" disabled className="rounded-xl border px-4 py-2 text-slate-400 cursor-not-allowed" title="Coming soon">Scan (beta)</button>
       </form>
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {results.map(card => (
