@@ -18,6 +18,9 @@ export default function BatchScanPage() {
   const [threshold, setThreshold] = useState(65); // OCR confidence 0-100
   const [intervalMs, setIntervalMs] = useState(900);
   const loopRef = useRef<number | null>(null);
+  const lastNumberRef = useRef<string | null>(null);
+  const [acceptedCount, setAcceptedCount] = useState(0);
+  const [maxScans, setMaxScans] = useState(10);
 
   useEffect(() => {
     (async () => {
@@ -49,18 +52,19 @@ export default function BatchScanPage() {
     try {
       const bmp = await createImageBitmap(canvas);
       const worker = new Worker(new URL('../workers/ocrWorker.ts', import.meta.url), { type: 'module' });
-      const { text, confidence } = await new Promise<{text:string; confidence:number}>((resolve, reject) => {
+      const { text, confidence, numberText } = await new Promise<{text:string; confidence:number; numberText?:string}>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('OCR timeout')), 15000);
         worker.onmessage = (ev: MessageEvent<any>) => {
           if (ev.data?.type === 'result') {
             clearTimeout(timeout);
-            resolve({ text: ev.data.text || '', confidence: Number(ev.data.confidence || 0) });
+            resolve({ text: ev.data.text || '', confidence: Number(ev.data.confidence || 0), numberText: ev.data.numberText });
             worker.terminate();
           }
         };
         worker.postMessage({ type: 'ocr', image: bmp }, [bmp]);
       });
       if (confidence < threshold) return; // too low confidence
+      lastNumberRef.current = (numberText || '').replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
       const lines = (text || '')
         .split(/\n+/)
         .map(l => l.replace(/[^A-Za-z0-9:'\- ]+/g, ' ').trim())
@@ -71,7 +75,14 @@ export default function BatchScanPage() {
         const s = await suggestNames(l, 1);
         normalized.push(s[0] || l);
       }
-      if (normalized.length) setCandidates(prev => [...prev, ...normalized]);
+      if (normalized.length) {
+        setCandidates(prev => [...prev, ...normalized]);
+        setAcceptedCount(c => {
+          const next = c + normalized.length;
+          if (autoRunning && next >= maxScans) stopAuto();
+          return next;
+        });
+      }
     } catch (e: any) {
       setError(e.message || 'OCR failed');
     } finally {
@@ -101,7 +112,13 @@ export default function BatchScanPage() {
     for (const q of uniq) {
       try {
         const hits = await searchCardsByName(q);
-        results.push({ query: q, match: hits[0] || null });
+        let chosen = hits[0] || null;
+        const num = lastNumberRef.current;
+        if (num) {
+          const byNum = hits.find(h => (h.collectorNumber || '').toString().replace(/[^0-9a-zA-Z]/g, '').toUpperCase() === num);
+          if (byNum) chosen = byNum;
+        }
+        results.push({ query: q, match: chosen });
       } catch {
         results.push({ query: q, match: null });
       }
@@ -155,6 +172,9 @@ export default function BatchScanPage() {
               <label className="ml-2">Interval ms
                 <input type="number" className="ml-1 w-20 border rounded" value={intervalMs} onChange={e => setIntervalMs(Math.max(200, Number(e.target.value)))} />
               </label>
+              <label className="ml-2">Target
+                <input type="number" className="ml-1 w-14 border rounded" value={maxScans} onChange={e => setMaxScans(Math.max(1, Number(e.target.value)))} />
+              </label>
               {!autoRunning ? (
                 <button className="ml-2 rounded border px-3 py-1" onClick={startAuto}>Auto</button>
               ) : (
@@ -162,6 +182,7 @@ export default function BatchScanPage() {
               )}
             </div>
           </div>
+          <div className="mt-1 text-xs text-slate-500">Accepted: {acceptedCount} / {maxScans} {lastNumberRef.current ? `(cn hint: ${lastNumberRef.current})` : ''}</div>
           {error && <div className="mt-2 text-xs text-rose-600">{error}</div>}
           <canvas ref={canvasRef} className="hidden" />
         </div>

@@ -9,6 +9,8 @@ export type OcrResponse = {
   type: 'result';
   text: string;
   confidence: number;
+  numberText?: string;
+  numberConfidence?: number;
 };
 
 declare const self: DedicatedWorkerGlobalScope & typeof globalThis;
@@ -90,5 +92,24 @@ self.onmessage = async (ev: MessageEvent<OcrRequest>) => {
   const result = await Tesseract.recognize(roiCanvas, 'eng', { logger: () => {} });
   const text = (result?.data?.text || '').toString();
   const confidence: number = Number(result?.data?.confidence || 0);
-  self.postMessage({ type: 'result', text, confidence } as OcrResponse);
+
+  // Secondary ROI: bottom-right area where collector number typically appears
+  let numberText = '';
+  let numberConfidence = 0;
+  try {
+    const numY = Math.floor(base.height * 0.78);
+    const numH = Math.max(10, Math.floor(base.height * 0.18));
+    const numX = Math.floor(base.width * 0.58);
+    const numW = Math.max(20, Math.floor(base.width * 0.4));
+    const numCanvas = new OffscreenCanvas(numW, Math.min(numH, base.height - numY));
+    const nctx = numCanvas.getContext('2d');
+    if (nctx) {
+      nctx.drawImage(base, numX, numY, numW, Math.min(numH, base.height - numY), 0, 0, numW, Math.min(numH, base.height - numY));
+      const nres = await Tesseract.recognize(numCanvas, 'eng', { logger: () => {} });
+      numberText = (nres?.data?.text || '').toString();
+      numberConfidence = Number(nres?.data?.confidence || 0);
+    }
+  } catch {}
+
+  self.postMessage({ type: 'result', text, confidence, numberText, numberConfidence } as OcrResponse);
 };
