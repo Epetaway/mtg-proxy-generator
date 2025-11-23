@@ -8,6 +8,7 @@ export type OcrRequest = {
 export type OcrResponse = {
   type: 'result';
   text: string;
+  confidence: number;
 };
 
 declare const self: DedicatedWorkerGlobalScope & typeof globalThis;
@@ -88,5 +89,6 @@ self.onmessage = async (ev: MessageEvent<OcrRequest>) => {
   const Tesseract: any = (self as any).Tesseract;
   const result = await Tesseract.recognize(roiCanvas, 'eng', { logger: () => {} });
   const text = (result?.data?.text || '').toString();
-  self.postMessage({ type: 'result', text } as OcrResponse);
+  const confidence: number = Number(result?.data?.confidence || 0);
+  self.postMessage({ type: 'result', text, confidence } as OcrResponse);
 };

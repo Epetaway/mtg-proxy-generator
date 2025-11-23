@@ -47,12 +47,12 @@ export default function ScanModal({ open, onClose, onRecognized }: ScanModalProp
     try {
       const bmp = await createImageBitmap(canvas);
       const worker = new Worker(new URL('../workers/ocrWorker.ts', import.meta.url), { type: 'module' });
-      const text: string = await new Promise((resolve, reject) => {
+      const { text, confidence } = await new Promise<{text:string; confidence:number}>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('OCR timeout')), 15000);
         worker.onmessage = (ev: MessageEvent<any>) => {
           if (ev.data?.type === 'result') {
             clearTimeout(timeout);
-            resolve(ev.data.text || '');
+            resolve({ text: ev.data.text || '', confidence: Number(ev.data.confidence || 0) });
             worker.terminate();
           }
         };

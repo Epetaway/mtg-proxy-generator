@@ -14,6 +14,10 @@ export default function BatchScanPage() {
   const [error, setError] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<string[]>([]);
   const [resolved, setResolved] = useState<{query: string; match: CardIdentity | null}[]>([]);
+  const [autoRunning, setAutoRunning] = useState(false);
+  const [threshold, setThreshold] = useState(65); // OCR confidence 0-100
+  const [intervalMs, setIntervalMs] = useState(900);
+  const loopRef = useRef<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -45,17 +49,18 @@ export default function BatchScanPage() {
     try {
       const bmp = await createImageBitmap(canvas);
       const worker = new Worker(new URL('../workers/ocrWorker.ts', import.meta.url), { type: 'module' });
-      const text: string = await new Promise((resolve, reject) => {
+      const { text, confidence } = await new Promise<{text:string; confidence:number}>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('OCR timeout')), 15000);
         worker.onmessage = (ev: MessageEvent<any>) => {
           if (ev.data?.type === 'result') {
             clearTimeout(timeout);
-            resolve(ev.data.text || '');
+            resolve({ text: ev.data.text || '', confidence: Number(ev.data.confidence || 0) });
             worker.terminate();
           }
         };
         worker.postMessage({ type: 'ocr', image: bmp }, [bmp]);
       });
+      if (confidence < threshold) return; // too low confidence
       const lines = (text || '')
         .split(/\n+/)
         .map(l => l.replace(/[^A-Za-z0-9:'\- ]+/g, ' ').trim())
@@ -71,6 +76,22 @@ export default function BatchScanPage() {
       setError(e.message || 'OCR failed');
     } finally {
       setBusy(false);
+    }
+  }
+
+  function startAuto() {
+    if (autoRunning) return;
+    setAutoRunning(true);
+    loopRef.current = self.setInterval(() => {
+      captureOnce().catch(() => {});
+    }, intervalMs);
+  }
+
+  function stopAuto() {
+    setAutoRunning(false);
+    if (loopRef.current) {
+      clearInterval(loopRef.current);
+      loopRef.current = null;
     }
   }
 
@@ -123,10 +144,23 @@ export default function BatchScanPage() {
           <div className="aspect-video bg-black rounded overflow-hidden">
             <video ref={videoRef} className="w-full h-full object-contain" />
           </div>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex flex-wrap gap-2 items-center">
             <button className="rounded border px-3 py-1" onClick={captureOnce} disabled={busy}>Capture</button>
             <button className="rounded border px-3 py-1" onClick={() => { setCandidates([]); setResolved([]); }}>Clear</button>
             <button className="rounded border px-3 py-1" onClick={resolveMatches} disabled={!candidates.length}>Resolve Matches</button>
+            <div className="flex items-center gap-1 text-xs ml-auto">
+              <label>Confidence ≥
+                <input type="number" className="ml-1 w-14 border rounded" value={threshold} onChange={e => setThreshold(Math.min(100, Math.max(0, Number(e.target.value))))} />
+              </label>
+              <label className="ml-2">Interval ms
+                <input type="number" className="ml-1 w-20 border rounded" value={intervalMs} onChange={e => setIntervalMs(Math.max(200, Number(e.target.value)))} />
+              </label>
+              {!autoRunning ? (
+                <button className="ml-2 rounded border px-3 py-1" onClick={startAuto}>Auto</button>
+              ) : (
+                <button className="ml-2 rounded border px-3 py-1" onClick={stopAuto}>Stop</button>
+              )}
+            </div>
           </div>
           {error && <div className="mt-2 text-xs text-rose-600">{error}</div>}
           <canvas ref={canvasRef} className="hidden" />
