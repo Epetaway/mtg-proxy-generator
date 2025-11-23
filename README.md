@@ -1,36 +1,46 @@
-# MTG Proxy Generator (Search-Enabled)
 
-Build custom MTG proxy galleries by searching for cards via the free [Scryfall API](https://scryfall.com). This tool helps proxy users preview and compile cards into a printable format using realistic dimensions.
+# TCG Portfolio App
 
-## ✨ Features
-- 🔍 Live card search using Scryfall
-- 🎴 Click-to-add cards to a printable gallery
-- 🖼️ Card display set to 2.5" x 3.5" (real-world MTG dimensions)
-- ⚙️ Built with HTML, CSS, and jQuery (no backend required)
+A full-featured TCG collection, pricing, and proxy generator app based on the original MTG Proxy Generator.
 
-## 🚀 Getting Started
+## Features
+- MTG proxy generator (Scryfall-powered)
+- Collection management (add, edit, delete, filter)
+- Pricing integration (Scryfall, future TCGplayer/eBay ready)
+- CSV export (generic & Card Kingdom)
+- DEMO vs PERSONAL mode (data separation)
+- Progressive Web App (PWA) for Android installability
 
-1. Clone the repo:
+## Getting Started
+1. **Clone the repo**
+2. **Install dependencies**
+	```sh
+	cd client && npm install
+	cd ../server && npm install
+	```
+3. **Run in DEMO mode** (default)
+	```sh
+	cd client && npm run dev
+	cd ../server && npm run dev
+	```
+4. **Switch to PERSONAL mode**
+	- Edit `client/.env` and set `VITE_APP_MODE=PERSONAL`
+	- PERSONAL data is stored in `local_collection` (never committed)
 
-```bash
-git clone https://github.com/your-username/mtg-proxy-generator.git
-cd mtg-proxy-generator
+## PWA & Mobile
+- The app is installable as a PWA on Android and desktop (Add to Home Screen).
+- Works offline for viewing collection and proxy generator (when assets are cached).
+
+## Deployment
+- Frontend can be deployed to GitHub Pages or similar for demo mode.
+- Backend runs locally for personal mode.
+
+## Data Safety
+- Demo/sample data only in repo and demo mode.
+- Personal data is never committed or pushed.
+
+## Future: Native Android Client
+- API endpoints are mobile-client ready for future React Native/Android integration.
 
 ---
-
-## Deploy on GitHub Pages
-
-This is a static site (no build step). Two options:
-
-### Option A — with GitHub Actions (recommended)
-1. Push to a repo (default branch `main`).
-2. Ensure the included workflow `.github/workflows/pages.yml` exists on `main`.
-3. In **Settings → Pages**, set **Source** to **GitHub Actions**.
-4. Push to `main` again (or rerun the workflow).
-
-### Option B — without Actions
-1. In **Settings → Pages**, set **Source** to **Deploy from a branch**.
-2. Choose branch `main` and folder `/root`.
-3. Save. Pages will serve from `https://<you>.github.io/<repo>/`.
-
-> Paths are relative (`./main.js`), so both project pages and user pages will work without extra config.
+For full details, see the master prompt and docs in each folder.
