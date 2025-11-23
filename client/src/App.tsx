@@ -2,6 +2,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import ProxyPage from './pages/ProxyPage';
 import AddPage from './pages/AddPage';
 import DashboardPage from './pages/DashboardPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/add" element={<AddPage />} />
           <Route path="/proxy" element={<ProxyPage />} />
-          <Route path="/settings" element={<div>Settings (coming soon)</div>} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>
       <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-500">
