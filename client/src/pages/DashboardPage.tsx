@@ -9,9 +9,10 @@ const repo = new LocalBrowserCollectionRepository();
 export default function DashboardPage() {
   const [entries, setEntries] = useState<CollectionEntry[]>([]);
   const [prices, setPrices] = useState<{[id: string]: number | null}>({});
+  console.log('DashboardPage rendered', { entriesCount: entries.length });
 
   useEffect(() => {
-    repo.getAll().then(async es => {
+    repo.getAll().then(async (es: CollectionEntry[]) => {
       setEntries(es);
       // Fetch prices for each entry
       const priceMap: {[id: string]: number | null} = {};
