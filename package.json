@@ -1,0 +1,29 @@
+{
+  "name": "mtg-proxy-generator",
+  "version": "2.0.0",
+  "description": "TCG Proxy Generator powered by the Scryfall API - A polished developer-quality web tool for generating printable Magic: The Gathering proxies",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "keywords": [
+    "mtg",
+    "magic-the-gathering",
+    "proxy",
+    "scryfall",
+    "tcg",
+    "card-games"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.7.3"
+  }
+}
