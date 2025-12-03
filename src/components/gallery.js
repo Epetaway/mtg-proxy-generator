@@ -130,7 +130,12 @@ class CardGallery {
     if (this.cards.length === 0) {
       this.container.innerHTML = `
         <div class="gallery-empty">
-          <span class="gallery-empty-icon">🎴</span>
+          <span class="gallery-empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="2" ry="2"/>
+              <path d="M12 8v8m-4-4h8"/>
+            </svg>
+          </span>
           <p>Your gallery is empty</p>
           <p class="gallery-empty-hint">Search for cards and add them to build your proxy sheet</p>
         </div>
