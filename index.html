@@ -3,129 +3,160 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MTG Proxy Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="description" content="Generate printable Magic: The Gathering proxies with a clean, mobile-first UI." />
-
-  <style>
-    @page {
-      size: Letter;
-      margin: 0.25in;
-    }
-    /* Print-only styles */
-    @media print {
-      body * { visibility: hidden; }
-      #printable, #printable * { visibility: visible; }
-      #printable { position: absolute; inset: 0; margin: 0; padding: 0; }
-      .print-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.12in; /* Slightly larger for crop-mark clearance */
-        padding: 0.05in;
-      }
-      .print-card {
-        width: 2.5in;
-        height: 3.5in;
-        position: relative;
-        background: #fff;
-      }
-      .print-card img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      /* Crop marks: 0.125in lines at corners */
-      .print-card::before,
-      .print-card::after {
-        content: "";
-        position: absolute;
-        width: 0.125in;
-        height: 0.125in;
-        pointer-events: none;
-        background: transparent;
-        box-shadow:
-          /* top-left horizontal */  -0.125in 0 0 0 #000,
-          /* top-left vertical   */   0 -0.125in 0 0 #000,
-          /* top-right horizontal*/   2.625in 0 0 0 #000,
-          /* top-right vertical  */   2.5in -0.125in 0 0 #000,
-          /* bottom-left horizontal*/ -0.125in 3.5in 0 0 #000,
-          /* bottom-left vertical  */  0 3.625in 0 0 #000,
-          /* bottom-right horizontal*/ 2.625in 3.5in 0 0 #000,
-          /* bottom-right vertical  */  2.5in 3.625in 0 0 #000;
-      }
-      .print-card::after { display: none; } /* keep single shadow set */
-    }
-  </style>
+  <title>MTG Proxy Generator | TCG Proxy Tool</title>
+  <meta name="description" content="Generate printable Magic: The Gathering proxies with a clean, modern UI. Search cards from Scryfall and print professional-quality proxy sheets." />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><rect x='4' y='2' width='16' height='20' rx='2' fill='%236366f1'/><rect x='6' y='6' width='12' height='8' fill='white' opacity='0.3'/></svg>">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="./src/styles/main.css">
+  
+  <!-- External Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-900">
-  <header class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <h1 class="text-lg font-bold tracking-tight">MTG Proxy Generator</h1>
-      <a href="https://github.com/" class="text-sm text-slate-600 hover:text-slate-900">GitHub</a>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <a href="./" class="logo">
+          <span class="logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="2" ry="2"/>
+              <path d="M12 8v8m-4-4h8"/>
+            </svg>
+          </span>
+          <span>MTG Proxy Generator</span>
+        </a>
+        <nav class="header-links">
+          <a href="https://github.com/Epetaway/mtg-proxy-generator" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto p-4">
-    <section class="mb-6">
-      <h2 class="text-xl font-semibold mb-2">Create Proxies</h2>
-      <p class="text-slate-600 text-sm">Search cards from Scryfall, select artwork, and print a 3×3 sheet with crop marks.</p>
+  <!-- Main Content -->
+  <main class="container" style="padding-top: var(--space-6); padding-bottom: var(--space-12);">
+    
+    <!-- Hero Section -->
+    <section class="section section-header">
+      <h1 class="section-title">Create Proxy Cards</h1>
+      <p class="section-description">
+        Search cards from Scryfall, select your favorite artwork, and print professional-quality proxy sheets with crop marks.
+      </p>
     </section>
 
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1" for="cardName">Card Name</label>
-          <input id="cardName" class="w-full rounded-xl border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., Lightning Bolt" />
+    <!-- Search Section -->
+    <section class="section">
+      <div class="card">
+        <div class="card-body">
+          <!-- Search Form -->
+          <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-4);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4);">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="cardName">Card Name</label>
+                <input type="text" id="cardName" class="form-input" placeholder="e.g., Lightning Bolt" autocomplete="off" />
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="setCode">Set Code <span style="color: var(--color-text-muted);">(optional)</span></label>
+                <input type="text" id="setCode" class="form-input" placeholder="e.g., MPS, BLB" autocomplete="off" />
+              </div>
+              <div style="display: flex; align-items: flex-end;">
+                <button id="searchBtn" class="btn btn-primary" style="width: 100%;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                  </svg>
+                  <span>Search</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips -->
+          <p class="tips">
+            <strong>Tips:</strong> Use full card names for better results. Set codes are 2–5 letters (e.g., <code>BLB</code>, <code>MPS</code>). Press Enter to search.
+          </p>
+
+          <!-- Search Results -->
+          <div id="results" class="search-results"></div>
+
+          <!-- Action Buttons -->
+          <div class="action-bar">
+            <button id="addToSheet" class="btn btn-success">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14m-7-7h14"/>
+              </svg>
+              <span>Add Selected</span>
+            </button>
+            <button id="clearSheet" class="btn btn-danger">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                <line x1="10" y1="11" x2="10" y2="17"/>
+                <line x1="14" y1="11" x2="14" y2="17"/>
+              </svg>
+              <span>Clear Gallery</span>
+            </button>
+            <button id="downloadPng" class="btn btn-secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="m21 15-5-5L5 21"/>
+              </svg>
+              <span>Download PNG</span>
+            </button>
+            <button id="downloadPdf" class="btn btn-secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+              <span>Download PDF</span>
+            </button>
+            <button id="printSheet" class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+              </svg>
+              <span>Print Preview</span>
+            </button>
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-1" for="setCode">Set Code (optional)</label>
-          <input id="setCode" class="w-full rounded-xl border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., MPS, BLB" />
-        </div>
-        <div class="flex items-end gap-2">
-          <button id="searchBtn" class="w-full inline-flex justify-center rounded-xl bg-indigo-600 text-white px-4 py-2 font-semibold hover:bg-indigo-700 transition-colors">Search</button>
-        </div>
-      </div>
-
-      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-        <span>Tips: Use full names for better results. Set codes are 2–5 letters (e.g., <code>BLB</code>).</span>
-      </div>
-
-      <div id="status" class="mt-4 text-sm text-slate-600"></div>
-
-      <div id="results" class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
-
-      <div class="mt-6 flex flex-wrap gap-3">
-        <button id="addToSheet" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:border-indigo-400 hover:text-indigo-600">Add Selected</button>
-        <button id="clearSheet" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:border-rose-400 hover:text-rose-600">Clear Sheet</button>
-        <button id="saveSheet" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:border-emerald-400 hover:text-emerald-600">Save Sheet</button>
-        <button id="loadSheet" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:border-indigo-400 hover:text-indigo-600">Load Sheet</button>
-        <button id="downloadPng" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:border-indigo-400 hover:text-indigo-600">Download PNG</button>
-<button id="downloadPdf" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:border-indigo-400 hover:text-indigo-600">Download PDF</button>
-<button id="printSheet" class="rounded-xl bg-emerald-600 text-white px-4 py-2 text-sm font-semibold hover:bg-emerald-700">Print</button>
       </div>
     </section>
 
-    <section class="mt-6">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-semibold">Sheet Preview</h3>
-        <span class="text-xs text-slate-500">Target: 9 cards (3×3)</span>
+    <!-- Gallery Section -->
+    <section class="section">
+      <div class="gallery-header">
+        <h2 class="gallery-title">Your Gallery</h2>
+        <span id="galleryCount" class="gallery-count">0 card(s)</span>
       </div>
-      <div id="sheet" class="bg-white rounded-xl border border-dashed border-slate-300 p-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 min-h-[200px]"></div>
+      <div id="sheet" class="gallery"></div>
     </section>
+
   </main>
 
-  <footer class="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-500">
-    © 2025 MTG Proxy Generator • For personal use only. Not for sale.
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 MTG Proxy Generator • Powered by <a href="https://scryfall.com" target="_blank" rel="noopener" style="color: var(--color-primary);">Scryfall API</a> • For personal use only. Not for sale.</p>
   </footer>
 
-  <div id="printable" class="hidden">
+  <!-- Hidden Print Container -->
+  <div id="printable" class="hidden" style="display: none;">
     <div id="printGrid" class="print-grid"></div>
   </div>
 
-  <script src="./main.js"></script>
+  <!-- App Script -->
+  <script type="module" src="./src/app.js"></script>
 </body>
 </html>
